@@ -1,6 +1,8 @@
 from sympy import logic
 import re
 
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+
 def simplify(expr):
   expr = format(expr)
   return logic.simplify_logic(expr)
@@ -15,21 +17,37 @@ def remove_dublicate_negs(expr):
   return expr.replace('~~', '')
 
 
-def separate_operands(expr):
-  seq_found = re.search(r"~{0,}[A-z]~{0,}[A-z]", expr)
+def clarify_conjunction(expr):
+  seq_found = re.search(r"(?:(?:~{0,}[A-z])|~{0,}\(.*\)){2}", expr)
   while seq_found:
     pat = seq_found.group(0)
-    splitted = [x for x in pat]
-    a = splitted[0] 
+    bracketCnt = 0
+    first_operand = True
+    a = ""
     b = ""
-    for i in range(1, len(splitted)):
-      if (a[-1] != '~'):
-        b += splitted[i]
-      else: 
-        a += splitted[i]
-    expr = expr.replace(pat, f"{a}&{b}", 1)
-    seq_found = re.search(r"~{0,}[A-z]~{0,}[A-z]", expr)
-  return expr
+    for l in pat:
+      if l == '(':
+        bracketCnt += 1
+        if len(a) > 0 and a != '~' and bracketCnt == 1:
+          first_operand = False # a(...)
+      elif l == ')':
+        bracketCnt -= 1
+        if bracketCnt == 0 and first_operand:
+          first_operand = False # (...)b, (...)(...)
+          a += l
+          continue
+      elif l == '~' and len(a) > 0 and bracketCnt == 0:
+        first_operand = False # a~b, a~(...)
+      elif l in alphabet and len(a) > 0 and bracketCnt == 0 and a != '~':
+        first_operand = False # ab
+      
+      if (first_operand):
+        a += l
+      else:
+        b += l
+    expr = expr.replace(pat, f"{a} & {b}", 1)
+    seq_found = re.search(r"(?:(?:~{0,}[A-z])|~{0,}\([^\(\)]*\)){2}", expr)
+  return expr    
 
 
 def replace_operator(operator, rep, expr):
@@ -45,7 +63,7 @@ def replace_operator(operator, rep, expr):
 def format(expr):
   expr = remove_spaces(expr)
   expr = remove_dublicate_negs(expr)
-  expr = separate_operands(expr)
+  expr = clarify_conjunction(expr)
 
   # Important to save the operators order to keep it correct
   expr = replace_operator('=', "Equivalent", expr)
@@ -56,12 +74,12 @@ def format(expr):
 
   return expr
 
-if __name__ == "__main__":
+def start():
   print(f"""
     +--------+------------+--------+------------+
     | Symbol | Operation  | Symbol | Operation  |   Note that:
     +--------+------------+--------+------------+   ab = a & b
-    |   &    |    AND     |   !    |    NOR     |   
+    |   &    |    AND     |   !    |    NOR     |   (...)(...) = (...) & (...)
     +--------+------------+--------+------------+  
     |   |    |    OR      |   /    |    NAND    |
     +--------+------------+--------+------------+  
@@ -70,7 +88,7 @@ if __name__ == "__main__":
     |   =    | EQUIVALENT |   ~    |    NOT     |
     +--------+------------+--------+------------+                      
   """)
-
+  
   expr = ""
   while (expr != "exit"):
     print("Input your logic expression:")
@@ -80,4 +98,5 @@ if __name__ == "__main__":
       {simplify(expr)}
     """)
 
-
+if __name__ == "__main__":
+  start()
