@@ -41,7 +41,7 @@ def clarify_conjunction(expr):
         a += l
       else:
         b += l
-    expr = expr.replace(pat, f"{a} & {b}", 1)
+    expr = expr.replace(pat, f"{a}&{b}", 1)
     seq_found = search(r"(?:(?:~{0,}[A-z])|~{0,}\(.*\)){2}", expr)
   return expr    
 
@@ -62,11 +62,11 @@ def format_logic(expr):
   expr = remove_dublicate_negs(expr)
   expr = clarify_conjunction(expr)
   # Important to save the operators order to keep it correct
-  expr = replace_operator('=', "Equivalent", expr)
-  expr = replace_operator('>', "Implies", expr)
-  expr = replace_operator('!', "Nor", expr)
   expr = replace_operator('/', "Nand", expr)
+  expr = replace_operator('!', "Nor", expr)
   expr = replace_operator('+', "Xor", expr)
+  expr = replace_operator('>', "Implies", expr)
+  expr = replace_operator('=', "Equivalent", expr)
   return expr
 
 

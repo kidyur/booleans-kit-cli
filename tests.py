@@ -25,39 +25,39 @@ class LogicKitTests(unittest.TestCase):
   def test_clarify_conjunction(self):
     case = 'ab'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "a & b")
+    self.assertEqual(res, "a&b")
 
     case = '~ab'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "~a & b")
+    self.assertEqual(res, "~a&b")
 
     case = 'a~b'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "a & ~b")
+    self.assertEqual(res, "a&~b")
 
     case = '~a~b'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "~a & ~b")
+    self.assertEqual(res, "~a&~b")
 
     case = '(a)b'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "(a) & b")
+    self.assertEqual(res, "(a)&b")
 
     case = 'a(b)'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "a & (b)")
+    self.assertEqual(res, "a&(b)")
 
     case = '~(a)b'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "~(a) & b")
+    self.assertEqual(res, "~(a)&b")
 
     case = 'a~(b)'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "a & ~(b)")
+    self.assertEqual(res, "a&~(b)")
 
     case = 'abc'
     res = logic_kit.clarify_conjunction(case)
-    self.assertEqual(res, "a & b & c") 
+    self.assertEqual(res, "a&b&c") 
 
     # case = '(a)(b)(c)'
     # res = logic_kit.clarify_conjunction(case)
@@ -80,7 +80,43 @@ class LogicKitTests(unittest.TestCase):
     case = f'~a{oper}~b'
     res = logic_kit.replace_operator(oper, rep, case)
     self.assertEqual(res, f"({rep}(~a, ~b))")
+
+    case = f'~(a){oper}~(b)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(~(a), ~(b)))")
     
+    case = f'(a){oper}~(b)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}((a), ~(b)))")
+
+    case = f'~(a){oper}(b)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(~(a), (b)))")
+
+    case = f'(a){oper}(b)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}((a), (b)))")
+
+    case = f'a{oper}b{oper}c'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(({rep}(a, b)), c))")
+
+    case = f'~a{oper}~b{oper}~c'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(({rep}(~a, ~b)), ~c))")
+
+    case = f'(a){oper}(b){oper}(c)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(({rep}((a), (b))), (c)))")
+
+    case = f'~(a){oper}~(b){oper}~(c)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(({rep}(~(a), ~(b))), ~(c)))")
+
+    case = f'a{oper}(b{oper}c)'
+    res = logic_kit.replace_operator(oper, rep, case)
+    self.assertEqual(res, f"({rep}(a, (({rep}(b, c)))))")
+
 
   def test_replace_operators_all(self):
     self.replace_operator_case('>', "Implies")
@@ -91,29 +127,35 @@ class LogicKitTests(unittest.TestCase):
 
 
   def test_remove_dublicate_negs(self):
-    case = f'a' 
+    case = 'a' 
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "a")
 
-    case = f'~a'
+    case = '~a'
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "~a")
 
-    case = f'~~a' 
+    case = '~~a' 
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "a")
 
-    case = f'~~~a' 
+    case = '~~~a' 
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "~a")
 
-    case = f'~~a~~b' 
+    case = '~~a~~b' 
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "ab")
 
-    case = f'~a~b' 
+    case = '~a~b' 
     res = logic_kit.remove_dublicate_negs(case)
     self.assertEqual(res, "~a~b")
+
+
+  def test_priority_of_operators(self):
+    case = 'a + b & c' 
+    res = logic_kit.format_logic(case)
+    self.assertEqual(res, "(Xor(a, b&c))")
 
   
 
