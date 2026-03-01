@@ -1,6 +1,6 @@
 from sympy import to_dnf, simplify_logic, to_cnf
 from sys import exit
-from re import search 
+from re import search, escape
 from string import ascii_lowercase
 
 
@@ -42,21 +42,22 @@ def clarify_conjunction(expr):
       else:
         b += l
     expr = expr.replace(pat, f"{a} & {b}", 1)
-    seq_found = search(r"(?:(?:~{0,}[A-z])|~{0,}\([^\(\)]*\)){2}", expr)
+    seq_found = search(r"(?:(?:~{0,}[A-z])|~{0,}\(.*\)){2}", expr)
   return expr    
 
 
 def replace_operator(operator, rep, expr):
-  op_found = search(r"[^&|+>=!/]+\{}[^&|+>=!/]+".format(operator), expr)
+  op_found = search(r"(?:(?:~{{0,}}[A-z])|~{{0,}}\([^\{0}]*\))\{0}(?:(?:~{{0,}}[A-z])|~{{0,}}\([^\{0}]*\))".format(escape(operator)), expr)
   while op_found:
     pat = op_found.group(0)
+    print(pat, " << pat found")
     operands = pat.split(operator)
-    expr = expr.replace(pat, f"{rep}({operands[0]}, {operands[1]})", 1)
-    op_found = search(r"[^&|+>=!/]+\{}[^&|+>=!/]+".format(operator), expr)
+    expr = expr.replace(pat, f"({rep}({operands[0]}, {operands[1]}))", 1)
+    op_found = search(r"(?:(?:~{{0,}}[A-z])|~{{0,}}\([^\{0}]*\))\{0}(?:(?:~{{0,}}[A-z])|~{{0,}}\([^\{0}]*\))".format(escape(operator)), expr)
   return expr
 
 
-def format(expr):
+def format_logic(expr):
   expr = remove_spaces(expr)
   expr = remove_dublicate_negs(expr)
   expr = clarify_conjunction(expr)
@@ -103,7 +104,7 @@ def entry(program, callback):
       exit()
     if (expr == "back"):
       show_menu()
-    print(callback(format(expr)))
+    print(callback(format_logic(expr)))
     
 
 def start():
