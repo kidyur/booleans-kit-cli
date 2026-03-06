@@ -1,13 +1,6 @@
 from re import findall, search
 
 
-def clarify_neg(expr):
-  seq = search(r"~[A-z]", expr)
-  while (seq):
-    seq = search()
-  return expr
-
-
 def remove_spaces(expr):
   expr = expr.split(' ')
   return ''.join(expr)
