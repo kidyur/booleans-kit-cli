@@ -179,21 +179,7 @@ class LogicKitTests(unittest.TestCase):
     case = 'a | b & c / d'
     res = formatter.format_logic(case)
     self.assertEqual(res, "(Or(a,(Nand((And(b,c)),d))))")
-  
-
-  def test_prioritize(self):
-    case = 'a&b&c' 
-    res = formatter.prioritize(case)
-    self.assertEqual(res, "(a&b&c)")
-
-    case = '~a&~b&~c' 
-    res = formatter.prioritize(case)
-    self.assertEqual(res, "(~a&~b&~c)")
-
-    case = 'a&b&c | c&d&b' 
-    res = formatter.prioritize(case)
-    self.assertEqual(res, "(a&b&c) | (c&d&b)")
-
+    
 
   def test_manual(self):
     case = "xyz | ~xyz"

@@ -1,13 +1,6 @@
 from re import findall, search
 
 
-def prioritize(expr):
-  seqs = findall(r"~{0,}[A-z](?:&~{0,}[A-z])+", expr)
-  for seq in seqs:
-    expr = expr.replace(seq, f"({seq})", 1)
-  return expr
-
-
 def clarify_neg(expr):
   seq = search(r"~[A-z]", expr)
   while (seq):
