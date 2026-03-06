@@ -2,7 +2,6 @@ from sympy import to_dnf, simplify_logic, to_cnf
 from sys import exit
 from formatter import format_logic
 
-
 def show_menu():
   print("""
     [menu] Choose the option:
