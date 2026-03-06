@@ -74,55 +74,55 @@ class LogicKitTests(unittest.TestCase):
   def replace_operator_case(self, oper, rep):
     case = f'a{oper}b' 
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(a, b))")
+    self.assertEqual(res, f"({rep}(a,b))")
 
     case = f'~a{oper}b'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(~a, b))")
+    self.assertEqual(res, f"({rep}(~a,b))")
     
     case = f'a{oper}~b'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(a, ~b))")
+    self.assertEqual(res, f"({rep}(a,~b))")
 
     case = f'~a{oper}~b'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(~a, ~b))")
+    self.assertEqual(res, f"({rep}(~a,~b))")
 
     case = f'~(a){oper}~(b)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(~(a), ~(b)))")
+    self.assertEqual(res, f"({rep}(~(a),~(b)))")
     
     case = f'(a){oper}~(b)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}((a), ~(b)))")
+    self.assertEqual(res, f"({rep}((a),~(b)))")
 
     case = f'~(a){oper}(b)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(~(a), (b)))")
+    self.assertEqual(res, f"({rep}(~(a),(b)))")
 
     case = f'(a){oper}(b)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}((a), (b)))")
+    self.assertEqual(res, f"({rep}((a),(b)))")
 
     case = f'a{oper}b{oper}c'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(({rep}(a, b)), c))")
+    self.assertEqual(res, f"({rep}(({rep}(a,b)),c))")
 
     case = f'~a{oper}~b{oper}~c'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(({rep}(~a, ~b)), ~c))")
+    self.assertEqual(res, f"({rep}(({rep}(~a,~b)),~c))")
 
     case = f'(a){oper}(b){oper}(c)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(({rep}((a), (b))), (c)))")
+    self.assertEqual(res, f"({rep}(({rep}((a),(b))),(c)))")
 
     case = f'~(a){oper}~(b){oper}~(c)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(({rep}(~(a), ~(b))), ~(c)))")
+    self.assertEqual(res, f"({rep}(({rep}(~(a),~(b))),~(c)))")
 
     case = f'a{oper}(b{oper}c)'
     res = formatter.replace_operator(oper, rep, case)
-    self.assertEqual(res, f"({rep}(a, (({rep}(b, c)))))")
+    self.assertEqual(res, f"({rep}(a,(({rep}(b,c)))))")
 
 
   def test_replace_operators_all(self):
@@ -163,22 +163,22 @@ class LogicKitTests(unittest.TestCase):
     #         2   1
     case = 'a + b & c' 
     res = formatter.format_logic(case)
-    self.assertEqual(res, "(Xor(a, (b&c)))")
+    self.assertEqual(res, "(Xor(a,(And(b,c))))")
 
     #         2   1
     case = 'a = b & c'
     res = formatter.format_logic(case)
-    self.assertEqual(res, "(Equivalent(a, (b&c)))")
+    self.assertEqual(res, "(Equivalent(a,(And(b,c))))")
 
     #         5   1   3   2   4   6
     case = 'a + b & c | d / e ! f = g'
     res = formatter.format_logic(case)
-    self.assertEqual(res, "(Equivalent((Xor(a, (Nor((b&c)|(Nand(d, e)), f)))), g))")
+    self.assertEqual(res, "(Equivalent((Or((Xor(a,(And(b,c)))),(Nor((Nand(d,e)),f)))),g))")
 
     #         3   1   2
     case = 'a | b & c / d'
     res = formatter.format_logic(case)
-    self.assertEqual(res, "a|(Nand((b&c), d))")
+    self.assertEqual(res, "(Or(a,(Nand((And(b,c)),d))))")
   
 
   def test_prioritize(self):
@@ -195,13 +195,18 @@ class LogicKitTests(unittest.TestCase):
     self.assertEqual(res, "(a&b&c) | (c&d&b)")
 
 
-  def test_format(self):
+  def test_manual(self):
     case = "xyz | ~xyz"
     res = formatter.clarify_conjunction(case)
     self.assertEqual(res, "x&y&z | ~x&y&z")
 
-    res = formatter.prioritize(res)
+    case = "x&y&z | ~x&y&z"
+    res = formatter.prioritize(case)
     self.assertEqual(res, "(x&y&z) | (~x&y&z)")
+
+    case = "a>~(~(x&~y)|(x>y))"
+    res = formatter.replace_operator('>', 'Implies', case)
+    self.assertEqual(res, "(Implies(a,~(~(x&~y)|((Implies(x,y))))))")
 
 if __name__ == "__main__":
   unittest.main()
